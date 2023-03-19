@@ -135,7 +135,7 @@ function drawWaveform(fft, waveColor, scale) {
 }
 
 function draw() {
-  background(30);
+  background(35);
 
   for (let data of audioData) {
     if (!data.audioElement.elt.paused && !data.audioElement.elt.ended) {
@@ -156,11 +156,10 @@ function draw() {
         waveform.reduce((a, b) => a + Math.abs(b)) / numPoints;
 
       // Map the average amplitude to the desired scale range
-      const ampScale = map(avgAmplitude, 0, 1, 0.3, 1.3);
+      const ampScale = map(avgAmplitude, 0, 1, 0.15, 1.6);
 
       beginShape();
       drawWaveform(data.fft, data.color, freqScale);
-      endShape(CLOSE);
     }
   }
 }
