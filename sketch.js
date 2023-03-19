@@ -4,39 +4,29 @@ const PATH_TO_AUDIO_FILES = "./audio-files";
 
 const audioFiles = [
   "AcidHOOS.mp3",
-  //   "AcidHOOS.wav",
   "Amber Syrup.mp3",
-  //   "Amber Syrup.wav",
   "Every Breath.mp3",
-  //   "Every Breath.wav",
   "GrooveA.mp3",
-  //   "GrooveA.wav",
   "HAUNT.mp3",
-  //   "HAUNT.wav",
-  //   "ImageOfLife.wav",
-  //   "Let it go.wav",
-  //   "MindZ.wav",
   "Other Side.mp3",
-  //   "Other Side.wav",
-  "Theodore",
-  "View.mp3",
-  //   "View.wav",
 ];
 
 function createAudioElements({ generateSongColor }) {
   return audioFiles.map((file, i) => {
+    const songColor = generateSongColor();
     let audioElement = createElement("audio");
     audioElement.id("audio-element-" + i);
     audioElement.attribute("controls", "");
+    audioElement.attribute("data-song-color", songColor);
 
     const audioContainer = document.getElementById("audio-container");
 
     // audioContainer.styles.backgroundColor = generateSongColor();
 
     const fileContainer = createElement("div");
-    const songColor = generateSongColor();
-    fileContainer.elt.setAttribute("class", "file-container");
-    fileContainer.elt.setAttribute("songColor", songColor);
+
+    // fileContainer.elt.setAttribute("class", "file-container");
+    fileContainer.elt.classList.add("file-container");
     fileContainer.style("background-color", songColor);
 
     fileContainer.parent(audioContainer);
@@ -48,7 +38,6 @@ function createAudioElements({ generateSongColor }) {
     h2.parent(fileContainer);
 
     let sourceElement = createElement("source");
-    sourceElement.attribute("src", songColor);
     sourceElement.attribute("src", `${PATH_TO_AUDIO_FILES}/${audioFiles[i]}`);
     sourceElement.attribute("type", "audio/" + audioFiles[i].split(".").pop());
     sourceElement.parent(audioElement);
@@ -71,9 +60,12 @@ function setup() {
 
   for (let el of audioElements) {
     let audioElement = select("#" + el.elt.id);
-    const songColor =
-      audioElement.elt.getAttribute("songColor") ||
-      color(random(255), random(255), random(255));
+    console.log(
+      "audioElement.elt",
+      audioElement.elt.getAttribute("data-song-color")
+    );
+    const songColor = audioElement.elt.getAttribute("data-song-color");
+    console.log("songColor", songColor);
 
     let audioSource = audioContext.createMediaElementSource(audioElement.elt);
     let fft = audioContext.createAnalyser();
@@ -148,17 +140,31 @@ function draw() {
   for (let data of audioData) {
     if (!data.audioElement.elt.paused && !data.audioElement.elt.ended) {
       stroke(data.color);
-      noFill();
+      fill(data.color);
+
+      const numPoints = data.fft.frequencyBinCount;
+      const waveform = new Float32Array(numPoints);
 
       // Calculate the scale based on the frequency values
-      let freqValues = new Uint8Array(data.fft.frequencyBinCount);
+      const freqValues = new Uint8Array(data.fft.frequencyBinCount);
       data.fft.getByteFrequencyData(freqValues);
-      let avgFreq = freqValues.reduce((a, b) => a + b) / freqValues.length;
-      let scale = map(avgFreq, 0, 255, 0.3, 1.3);
+      const avgFreq = freqValues.reduce((a, b) => a + b) / freqValues.length;
+      const freqScale = map(avgFreq, 0, 255, 0.3, 5);
+
+      // Calculate the average amplitude
+      const avgAmplitude =
+        waveform.reduce((a, b) => a + Math.abs(b)) / numPoints;
+
+      // Map the average amplitude to the desired scale range
+      const ampScale = map(avgAmplitude, 0, 1, 0.3, 1.3);
 
       beginShape();
-      drawWaveform(data.fft, data.color, scale);
+      drawWaveform(data.fft, data.color, freqScale);
       endShape(CLOSE);
     }
   }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }

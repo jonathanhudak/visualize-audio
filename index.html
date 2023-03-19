@@ -13,6 +13,9 @@
         --p5: 8rem;
         --col-w: calc(var(--p5) * 3);
       }
+      body * {
+        box-sizing: border-box;
+      }
       body {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -22,10 +25,9 @@
       }
 
       .audio-list {
-        position: absolute;
+        position: fixed;
         background: black;
         color: white;
-        padding: var(--p2);
         overflow: scroll;
         width: var(--col-w);
         height: 100vh;
@@ -36,18 +38,45 @@
       }
 
       canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transition: left 0.5s ease;
+      }
+      .audio-drawer-open canvas {
+        left: var(--col-w);
+      }
+      .audio-list {
+        transition: all 0.5s ease;
+        transform: translateX(-100%);
+      }
+      .audio-drawer-open .audio-list {
+        transform: translateX(0%);
+      }
+      .audio-container-toggle {
         position: fixed;
         top: 0;
-        left: var(
-          --col-w
-        ); /* This should match the width value of .audio-list */
+        left: 0;
+        z-index: 1;
       }
     </style>
     <!-- Add more audio elements as needed -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="sketch.js"></script>
   </head>
-  <body>
+  <body class="audio-drawer-open">
     <div id="audio-container" class="audio-list"></div>
+    <button id="audio-container-toggle" class="audio-container-toggle">
+      Audio tracks
+    </button>
+    <script>
+      const toggleAudioTracksButton = document.getElementById(
+        "audio-container-toggle"
+      );
+
+      toggleAudioTracksButton.addEventListener("click", () => {
+        document.body.classList.toggle("audio-drawer-open");
+      });
+    </script>
   </body>
 </html>
