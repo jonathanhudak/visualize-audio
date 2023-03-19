@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Waveform Visualization</title>
+    <style>
+      :root {
+        --p1: 1rem;
+        --p2: 2rem;
+        --p3: 3rem;
+        --p4: 5rem;
+        --p5: 8rem;
+        --col-w: calc(var(--p5) * 3);
+      }
+      body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--p2);
+        margin: 0;
+        padding: 0;
+      }
+
+      .audio-list {
+        position: absolute;
+        background: black;
+        color: white;
+        padding: var(--p2);
+        overflow: scroll;
+        width: var(--col-w);
+        height: 100vh;
+      }
+
+      .file-container {
+        padding: var(--p2);
+      }
+
+      canvas {
+        position: fixed;
+        top: 0;
+        left: var(
+          --col-w
+        ); /* This should match the width value of .audio-list */
+      }
+    </style>
+    <!-- Add more audio elements as needed -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="sketch.js"></script>
+  </head>
+  <body>
+    <div id="audio-container" class="audio-list"></div>
+  </body>
+</html>
