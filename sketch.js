@@ -11,13 +11,24 @@ const audioFiles = [
   "Other Side.mp3",
 ];
 
+function generateRandomLCHColorAndComplement() {
+  let lchColor = chroma.random("lch");
+  //   let complement = lchColor.set("h", (lchColor.get("h") + 180) % 360);
+  let complement = "tomato";
+  return {
+    lchColor: lchColor,
+    complement: complement,
+  };
+}
+
 function createAudioElements({ generateSongColor }) {
   return audioFiles.map((file, i) => {
-    const songColor = generateSongColor();
+    const { lchColor, complement } = generateRandomLCHColorAndComplement();
     let audioElement = createElement("audio");
     audioElement.id("audio-element-" + i);
     audioElement.attribute("controls", "");
-    audioElement.attribute("data-song-color", songColor);
+    audioElement.attribute("data-song-color", lchColor);
+    audioElement.attribute("data-song-color-complement", complement);
 
     const audioContainer = document.getElementById("audio-container");
 
@@ -27,7 +38,7 @@ function createAudioElements({ generateSongColor }) {
 
     // fileContainer.elt.setAttribute("class", "file-container");
     fileContainer.elt.classList.add("file-container");
-    fileContainer.style("background-color", songColor);
+    fileContainer.style("background-color", lchColor);
 
     fileContainer.parent(audioContainer);
 
@@ -65,7 +76,10 @@ function setup() {
       audioElement.elt.getAttribute("data-song-color")
     );
     const songColor = audioElement.elt.getAttribute("data-song-color");
-    console.log("songColor", songColor);
+    const songColorComplement = audioElement.elt.getAttribute(
+      "data-song-color-complement"
+    );
+    console.debug("songColor", songColor);
 
     let audioSource = audioContext.createMediaElementSource(audioElement.elt);
     let fft = audioContext.createAnalyser();
@@ -77,11 +91,10 @@ function setup() {
     audioData.push({
       audioElement: audioElement,
       fft: fft,
-      color: songColor, // Create a random p5.js color object
+      color: songColor,
+      colorComplemenet: songColorComplement,
     });
 
-    // Add event listeners for play and pause events
-    // Add event listeners for play and pause events
     // Add event listeners for play and pause events
     audioElement.elt.addEventListener("play", () => {
       // Pause all other audio elements
@@ -135,10 +148,9 @@ function drawWaveform(fft, waveColor, scale) {
 }
 
 function draw() {
-  background(35);
-
   for (let data of audioData) {
     if (!data.audioElement.elt.paused && !data.audioElement.elt.ended) {
+      background(data.colorComplemenet);
       stroke(data.color);
       fill(data.color);
 
