@@ -12,43 +12,42 @@ const audioFiles = [
 ];
 
 function generateRandomLCHColorAndComplement() {
-  let lchColor = chroma.random("lch");
-  //   let complement = lchColor.set("h", (lchColor.get("h") + 180) % 360);
-  let complement = "tomato";
+  const lchColor = chroma.random("lch");
+  const complement = chroma(lchColor).set(
+    "lch.h",
+    (lchColor.get("lch.h") + 180) % 360
+  );
+
   return {
     lchColor: lchColor,
     complement: complement,
   };
 }
 
-function createAudioElements({ generateSongColor }) {
+function createAudioElements() {
   return audioFiles.map((file, i) => {
     const { lchColor, complement } = generateRandomLCHColorAndComplement();
-    let audioElement = createElement("audio");
+    const audioElement = createElement("audio");
     audioElement.id("audio-element-" + i);
     audioElement.attribute("controls", "");
     audioElement.attribute("data-song-color", lchColor);
     audioElement.attribute("data-song-color-complement", complement);
 
     const audioContainer = document.getElementById("audio-container");
-
-    // audioContainer.styles.backgroundColor = generateSongColor();
-
     const fileContainer = createElement("div");
 
-    // fileContainer.elt.setAttribute("class", "file-container");
     fileContainer.elt.classList.add("file-container");
     fileContainer.style("background-color", lchColor);
 
     fileContainer.parent(audioContainer);
 
-    let h2 = createElement("h2");
+    const h2 = createElement("h2");
     h2.html(file);
     h2.parent(audioElement);
 
     h2.parent(fileContainer);
 
-    let sourceElement = createElement("source");
+    const sourceElement = createElement("source");
     sourceElement.attribute("src", `${PATH_TO_AUDIO_FILES}/${audioFiles[i]}`);
     sourceElement.attribute("type", "audio/" + audioFiles[i].split(".").pop());
     sourceElement.parent(audioElement);
@@ -63,14 +62,14 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   const generateSongColor = () => color(random(255), random(255), random(255));
 
-  let audioElements = createAudioElements({
+  const audioElements = createAudioElements({
     generateSongColor,
   });
 
-  let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-  for (let el of audioElements) {
-    let audioElement = select("#" + el.elt.id);
+  for (const el of audioElements) {
+    const audioElement = select("#" + el.elt.id);
     console.log(
       "audioElement.elt",
       audioElement.elt.getAttribute("data-song-color")
@@ -81,8 +80,8 @@ function setup() {
     );
     console.debug("songColor", songColor);
 
-    let audioSource = audioContext.createMediaElementSource(audioElement.elt);
-    let fft = audioContext.createAnalyser();
+    const audioSource = audioContext.createMediaElementSource(audioElement.elt);
+    const fft = audioContext.createAnalyser();
     fft.fftSize = 1024;
 
     audioSource.connect(fft);
@@ -107,11 +106,11 @@ function setup() {
   }
 }
 function drawWaveform(fft, waveColor, scale) {
-  let numPoints = fft.frequencyBinCount;
-  let waveform = new Float32Array(numPoints);
+  const numPoints = fft.frequencyBinCount;
+  const waveform = new Float32Array(numPoints);
   fft.getFloatTimeDomainData(waveform);
 
-  let angleStep = TWO_PI / numPoints;
+  const angleStep = TWO_PI / numPoints;
 
   push();
   translate(width / 2, height / 2);
@@ -161,14 +160,14 @@ function draw() {
       const freqValues = new Uint8Array(data.fft.frequencyBinCount);
       data.fft.getByteFrequencyData(freqValues);
       const avgFreq = freqValues.reduce((a, b) => a + b) / freqValues.length;
-      const freqScale = map(avgFreq, 0, 255, 0.3, 5);
+      const freqScale = map(avgFreq, 0, 255, 0.2, 3.0);
 
       // Calculate the average amplitude
       const avgAmplitude =
         waveform.reduce((a, b) => a + Math.abs(b)) / numPoints;
 
       // Map the average amplitude to the desired scale range
-      const ampScale = map(avgAmplitude, 0, 1, 0.15, 1.6);
+      const ampScale = map(avgAmplitude, 0, 1, 0.15, 1.0);
 
       beginShape();
       drawWaveform(data.fft, data.color, freqScale);
