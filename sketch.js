@@ -4,12 +4,11 @@ const PATH_TO_AUDIO_FILES = "./audio-files";
 
 const audioFiles = [
   "AcidHOOS.mp3",
-  "Light of Attention.wav",
   "Amber Syrup.mp3",
-  "Every Breath.mp3",
-  "GrooveA.mp3",
+  // "GrooveA.mp3",
   "HAUNT.mp3",
-  "Other Side.mp3",
+  "Light of Attention.wav",
+  // "Other Side.mp3",
 ];
 
 function generateRandomLCHColorAndComplement() {
