@@ -4,6 +4,7 @@ const PATH_TO_AUDIO_FILES = "./audio-files";
 
 const audioFiles = [
   "AcidHOOS.mp3",
+  "Light of Attention.wav",
   "Amber Syrup.mp3",
   "Every Breath.mp3",
   "GrooveA.mp3",
@@ -26,15 +27,25 @@ function generateRandomLCHColorAndComplement() {
 
 function createAudioElements() {
   return audioFiles.map((file, i) => {
-    const { lchColor, complement } = generateRandomLCHColorAndComplement();
     const audioElement = createElement("audio");
     audioElement.id("audio-element-" + i);
-    audioElement.attribute("controls", "");
-    audioElement.attribute("data-song-color", lchColor);
-    audioElement.attribute("data-song-color-complement", complement);
+    let lchColor;
+    let complement;
+    function randomizeColorPalette() {
+      ({ lchColor, complement } = generateRandomLCHColorAndComplement());
+      audioElement.attribute("controls", "");
+      audioElement.attribute("data-song-color", lchColor);
+      audioElement.attribute("data-song-color-complement", complement);
+    }
+    randomizeColorPalette();
 
     const audioContainer = document.getElementById("audio-container");
     const fileContainer = createElement("div");
+
+    const regeneratePaletteButton = createElement("button");
+    regeneratePaletteButton.html("Regenerate Palette");
+    regeneratePaletteButton.parent(fileContainer);
+    regeneratePaletteButton.mousePressed(randomizeColorPalette);
 
     fileContainer.elt.classList.add("file-container");
     fileContainer.style("background-color", lchColor);
@@ -58,6 +69,26 @@ function createAudioElements() {
   });
 }
 
+function onAttributesChange(mutationList) {
+  for (const mutation of mutationList) {
+    if (mutation.type === "attributes") {
+      const targetId = mutation.target.id;
+      const newSongColor = mutation.target.getAttribute("data-song-color");
+      const newSongColorComplement = mutation.target.getAttribute(
+        "data-song-color-complement"
+      );
+
+      // Update the corresponding audioData object
+      for (let data of audioData) {
+        if (data.audioElement.elt.id === targetId) {
+          data.color = newSongColor;
+          data.colorComplemenet = newSongColorComplement;
+          break;
+        }
+      }
+    }
+  }
+}
 function setup() {
   createCanvas(windowWidth, windowHeight);
   const generateSongColor = () => color(random(255), random(255), random(255));
@@ -68,17 +99,14 @@ function setup() {
 
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
+  const observer = new MutationObserver(onAttributesChange);
+
   for (const el of audioElements) {
     const audioElement = select("#" + el.elt.id);
-    console.log(
-      "audioElement.elt",
-      audioElement.elt.getAttribute("data-song-color")
-    );
     const songColor = audioElement.elt.getAttribute("data-song-color");
     const songColorComplement = audioElement.elt.getAttribute(
       "data-song-color-complement"
     );
-    console.debug("songColor", songColor);
 
     const audioSource = audioContext.createMediaElementSource(audioElement.elt);
     const fft = audioContext.createAnalyser();
@@ -103,8 +131,15 @@ function setup() {
         }
       }
     });
+
+    // Observe changes to data-song-color and data-song-color-complement attributes
+    observer.observe(audioElement.elt, {
+      attributes: true,
+      attributeFilter: ["data-song-color", "data-song-color-complement"],
+    });
   }
 }
+
 function drawWaveform(fft, waveColor, scale) {
   const numPoints = fft.frequencyBinCount;
   const waveform = new Float32Array(numPoints);
