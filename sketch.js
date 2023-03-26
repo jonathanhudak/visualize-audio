@@ -5,6 +5,7 @@ const PATH_TO_AUDIO_FILES = "./audio-files";
 const audioFiles = [
   "AcidHOOS.mp3",
   "Amber Syrup.mp3",
+  "PhysicalModellingSynthesis-A.mp3",
   // "GrooveA.mp3",
   "HAUNT.mp3",
   "Light of Attention.wav",
@@ -47,7 +48,7 @@ function createAudioElements() {
     regeneratePaletteButton.mousePressed(randomizeColorPalette);
 
     fileContainer.elt.classList.add("file-container");
-    fileContainer.style("background-color", lchColor);
+    fileContainer.style("background-color", complement);
 
     fileContainer.parent(audioContainer);
 
@@ -80,6 +81,8 @@ function onAttributesChange(mutationList) {
       // Update the corresponding audioData object
       for (let data of audioData) {
         if (data.audioElement.elt.id === targetId) {
+          data.audioElement.elt.parentElement.style.backgroundColor =
+            newSongColorComplement;
           data.color = newSongColor;
           data.colorComplemenet = newSongColorComplement;
           break;
@@ -123,10 +126,15 @@ function setup() {
 
     // Add event listeners for play and pause events
     audioElement.elt.addEventListener("play", () => {
+      console.log(audioElement.elt, audioElement.elt.parentElement);
+      audioElement.elt.parentElement.classList.add("current-playing");
       // Pause all other audio elements
       for (let data of audioData) {
         if (data.audioElement.elt !== audioElement.elt) {
           data.audioElement.elt.pause();
+          data.audioElement.elt.parentElement.classList.remove(
+            "current-playing"
+          );
         }
       }
     });
